@@ -22,6 +22,20 @@ func init() {
 	}
 }
 
+func GetValue(key string, values ...string) string {
+	if s := GetString(key); s != "" {
+		return s
+	}
+
+	for _, val := range values {
+		if val != "" {
+			return val
+		}
+	}
+
+	return ""
+}
+
 func Get(key string) interface{} {
 	return v.Get(key)
 }

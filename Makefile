@@ -1,3 +1,6 @@
+GO111MODULE=on
+GOPROXY=https://goproxy.cn
+
 .PHONY: test
 
 test: 
