@@ -1,6 +1,6 @@
 package conf
 
-func GetEnv(key string) string {
+func GetEnv(key string, defaultValue ...string) string {
 	if err := v.BindEnv(key); err != nil {
 		return ""
 	}
@@ -14,7 +14,15 @@ func (e EnvVar) String() string {
 	return string(e)
 }
 
-func (e EnvVar) Value() string {
+func (e EnvVar) Value(opts ...string) string {
+	if len(opts) > 0 {
+		for _, o := range opts {
+			if o != "" {
+				return o
+			}
+		}
+	}
+
 	err := v.BindEnv(string(e))
 	if err != nil {
 		return ""
@@ -32,7 +40,5 @@ const (
 	PG_DBNAME   EnvVar = "PG_DBNAME"
 
 	// redis
-	REDIS_HOST     EnvVar = "REDIS_HOST"
-	REDIS_PORT     EnvVar = "REDIS_PORT"
-	REDIS_PASSWORD EnvVar = "REDIS_PASSWORD"
+	PG_DSN EnvVar = "pg_dsn"
 )

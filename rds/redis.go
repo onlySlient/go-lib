@@ -1,29 +1,40 @@
 package rds
 
 import (
-	"context"
-	"slient/conf"
+	"slient/misc"
 	"sync"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
+const (
+	DefaultKey = "redis-key"
+)
+
 var m sync.Map
-var rdb *redis.Client
 
-func GetInstenance(key string, db ...int) *redis.Client {
-	m.LoadOrStore(key, redis.NewClient(&redis.Options{
-		Addr:     conf.GetValue("redis_addr", "localhost:6379"),
-		Password: conf.GetValue("redis_pwd", "123456"),
-		DB:       0,
-	}))
+func Register(dsn string, optName ...string) {
+	m.LoadOrStore(misc.GetOptName(append(optName, DefaultKey)...), func() *redis.Client {
+		opt, err := redis.ParseURL(dsn)
+		if err != nil {
+			panic(err)
+		}
+		return redis.NewClient(opt)
+	}())
 }
 
-func Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	return rdb.Set(ctx, key, value, expiration)
-}
+func GetInstenance(keys ...string) *redis.Client {
+	key := DefaultKey
+	for _, k := range keys {
+		if k != "" {
+			key = k
+		}
+	}
 
-func Get(ctx context.Context, key string) *redis.StringCmd {
-	return rdb.Get(ctx, key)
+	val, ok := m.Load(key)
+	if !ok {
+		return nil
+	}
+
+	return val.(*redis.Client)
 }

@@ -2,21 +2,28 @@ package rds
 
 import (
 	"context"
+	"slient/conf"
 	"testing"
 	"time"
 
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 var ctx = context.Background()
 
-func TestSet(t *testing.T) {
-	_, err := Set(ctx, "pwd", "123456", time.Hour).Result()
-	t.Log(err)
+func init() {
+	Register(conf.PG_DSN.Value("redis://127.0.0.1:6379/0"))
 }
 
-func TestGet(t *testing.T) {
-	r, err := Get(ctx, "pwd").Result()
-	assert.Equal(t, err, nil)
-	t.Log(r)
+func TestGetInstenance(t *testing.T) {
+	rds := GetInstenance()
+	assert.NotEqual(t, nil, rds)
+
+	_, err := rds.Set(ctx, "test", "result", time.Second).Result()
+	assert.Equal(t, nil, err)
+
+	result, err := rds.Get(ctx, "test").Result()
+	assert.Equal(t, nil, err)
+
+	t.Log(result)
 }
